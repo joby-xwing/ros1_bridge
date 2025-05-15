@@ -4,11 +4,11 @@
 
 int main(int argc, char * argv[])
 {
-  ros::init(argc, argv, "selected_topic_static_bridge");
+  ros::init(argc, argv, "selected_topics_static_bridge");
   ros::NodeHandle ros1_node;
 
   rclcpp::init(argc, argv);
-  auto ros2_node = rclcpp::Node::make_shared("selected_topic_static_bridge");
+  auto ros2_node = rclcpp::Node::make_shared("selected_topics_static_bridge");
 
   std::vector<ros1_bridge::Bridge1to2Handles> bridges_1to2;
   std::vector<ros1_bridge::Bridge2to1Handles> bridges_2to1;

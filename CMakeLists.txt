@@ -255,11 +255,11 @@ custom_executable(dynamic_bridge
 target_link_libraries(dynamic_bridge
   ${PROJECT_NAME})
 
-custom_executable(navstate_and_image_static_bridge
-  "src/navstate_and_image_static_bridge.cpp"
+custom_executable(selected_topics_static_bridge
+  "src/selected_topics_static_bridge.cpp"
   ROS1_DEPENDENCIES
   TARGET_DEPENDENCIES ${ros2_interface_packages})
-target_link_libraries(navstate_and_image_static_bridge
+target_link_libraries(selected_topics_static_bridge
   ${PROJECT_NAME})
 
 custom_executable(rawsensors_static_bridge

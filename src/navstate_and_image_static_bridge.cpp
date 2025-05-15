@@ -1,57 +1,68 @@
-#include <string>
-#include <vector>
-
 #include "ros/ros.h"
 #include "rclcpp/rclcpp.hpp"
 #include "ros1_bridge/bridge.hpp"
 
 int main(int argc, char * argv[])
 {
-  // ROS 1 initialization
-  ros::init(argc, argv, "bridge_ros1_to_ros2");
+  ros::init(argc, argv, "navstate_and_image_static_bridge");
   ros::NodeHandle ros1_node;
 
-  // ROS 2 initialization
   rclcpp::init(argc, argv);
-  auto ros2_node = rclcpp::Node::make_shared("bridge_ros1_to_ros2");
+  auto ros2_node = rclcpp::Node::make_shared("navstate_and_image_static_bridge");
 
-  std::vector<ros1_bridge::Bridge1to2Handles> bridges;
+  std::vector<ros1_bridge::Bridge1to2Handles> bridges_1to2;
+  std::vector<ros1_bridge::Bridge2to1Handles> bridges_2to1;
 
   try {
-    // Bridge for /n101xw/ins/NavState
-    auto bridge_navstate = ros1_bridge::create_bridge_from_1_to_2(
-      ros1_node,
-      ros2_node,
-      "superpilot_interfaces/msg/NavState",     // ROS 1 type name
-      "/n101xw/ins/NavState",                   // ROS 1 topic name
-      10,                                       // ROS 1 subscriber queue
-      "superpilot_interfaces/msg/NavState",     // ROS 2 type name
-      "/n101xw/ins/NavState",                   // ROS 2 topic name
-      10);                                      // ROS 2 publisher queue
+    // ROS1 -> ROS2
+    bridges_1to2.push_back(ros1_bridge::create_bridge_from_1_to_2(
+      ros1_node, ros2_node,
+      "std_msgs/Header", "/GpsOutageStart", 10,
+      "std_msgs/msg/Header", "/GpsOutageStart", 10));
+    RCLCPP_INFO(ros2_node->get_logger(), "Bridged /GpsOutageStart (ROS1 -> ROS2)");
 
-    bridges.push_back(bridge_navstate);
-    RCLCPP_INFO(ros2_node->get_logger(), "Bridged /n101xw/ins/NavState from ROS 1 to ROS 2");
+    bridges_1to2.push_back(ros1_bridge::create_bridge_from_1_to_2(
+      ros1_node, ros2_node,
+      "sensor_msgs/Image", "/n101xw/cameras/eo_runway/viewer/image", 10,
+      "sensor_msgs/msg/Image", "/n101xw/cameras/eo_runway/viewer/image", 10));
+    RCLCPP_INFO(ros2_node->get_logger(), "Bridged /n101xw/cameras/eo_runway/viewer/image (ROS1 -> ROS2)");
 
-    // Bridge for /n101xw/cameras/eo_runway/viewer/image
-    auto bridge_image = ros1_bridge::create_bridge_from_1_to_2(
-      ros1_node,
-      ros2_node,
-      "sensor_msgs/Image",
-      "/n101xw/cameras/eo_runway/viewer/image",
-      10,
-      "sensor_msgs/msg/Image",
-      "/n101xw/cameras/eo_runway/viewer/image",
-      10);
+    bridges_1to2.push_back(ros1_bridge::create_bridge_from_1_to_2(
+      ros1_node, ros2_node,
+      "superpilot_interfaces/NavState", "/n101xw/ins/NavState", 10,
+      "superpilot_interfaces/msg/NavState", "/n101xw/ins/NavState", 10));
+    RCLCPP_INFO(ros2_node->get_logger(), "Bridged /n101xw/ins/NavState (ROS1 -> ROS2)");
 
-    bridges.push_back(bridge_image);
-    RCLCPP_INFO(ros2_node->get_logger(), "Bridged /n101xw/cameras/eo_runway/viewer/image from ROS 1 to ROS 2");
+    bridges_1to2.push_back(ros1_bridge::create_bridge_from_1_to_2(
+      ros1_node, ros2_node,
+      "advanced_navigation_driver/RawGNSSPacket", "/n101xw/ins/RawGNSS", 10,
+      "advanced_navigation_driver/msg/RawGNSSPacket", "/n101xw/ins/RawGNSS", 10));
+    RCLCPP_INFO(ros2_node->get_logger(), "Bridged /n101xw/ins/RawGNSS (ROS1 -> ROS2)");
+
+    bridges_1to2.push_back(ros1_bridge::create_bridge_from_1_to_2(
+      ros1_node, ros2_node,
+      "advanced_navigation_driver/SystemStatePacket", "/n101xw/ins/SystemState", 10,
+      "advanced_navigation_driver/msg/SystemStatePacket", "/n101xw/ins/SystemState", 10));
+    RCLCPP_INFO(ros2_node->get_logger(), "Bridged /n101xw/ins/SystemState (ROS1 -> ROS2)");
+
+    // ROS2 -> ROS1
+    bridges_2to1.push_back(ros1_bridge::create_bridge_from_2_to_1(
+      ros2_node, ros1_node,
+      "advanced_navigation_driver/msg/SystemStatePacket", "/n101xw/nav_filter/SystemState", 10,
+      "advanced_navigation_driver/SystemStatePacket", "/n101xw/nav_filter/SystemState", 10));
+    RCLCPP_INFO(ros2_node->get_logger(), "Bridged /n101xw/nav_filter/SystemState (ROS2 -> ROS1)");
+
+    bridges_2to1.push_back(ros1_bridge::create_bridge_from_2_to_1(
+      ros2_node, ros1_node,
+      "superpilot_interfaces/msg/VisionBasedLanding", "/n101xw/vision_based_landing/output", 10,
+      "superpilot_interfaces/VisionBasedLanding", "/n101xw/vision_based_landing/output", 10));
+    RCLCPP_INFO(ros2_node->get_logger(), "Bridged /n101xw/vision_based_landing/output (ROS2 -> ROS1)");
 
   } catch (const std::exception & e) {
     RCLCPP_ERROR(ros2_node->get_logger(), "Bridge creation failed: %s", e.what());
     return 1;
   }
 
-  // Start spinning
   ros::AsyncSpinner spinner(1);
   spinner.start();
 

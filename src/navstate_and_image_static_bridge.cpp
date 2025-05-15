@@ -29,7 +29,7 @@ int main(int argc, char * argv[])
 
     bridges_1to2.push_back(ros1_bridge::create_bridge_from_1_to_2(
       ros1_node, ros2_node,
-      "superpilot_interfaces/NavState", "/n101xw/ins/NavState", 10,
+      "", "/n101xw/ins/NavState", 10,
       "superpilot_interfaces/msg/NavState", "/n101xw/ins/NavState", 10));
     RCLCPP_INFO(ros2_node->get_logger(), "Bridged /n101xw/ins/NavState (ROS1 -> ROS2)");
 
@@ -55,7 +55,7 @@ int main(int argc, char * argv[])
     bridges_2to1.push_back(ros1_bridge::create_bridge_from_2_to_1(
       ros2_node, ros1_node,
       "superpilot_interfaces/msg/VisionBasedLanding", "/n101xw/vision_based_landing/output", 10,
-      "superpilot_interfaces/VisionBasedLanding", "/n101xw/vision_based_landing/output", 10));
+      "", "/n101xw/vision_based_landing/output", 10));
     RCLCPP_INFO(ros2_node->get_logger(), "Bridged /n101xw/vision_based_landing/output (ROS2 -> ROS1)");
 
   } catch (const std::exception & e) {

@@ -15,7 +15,7 @@ int main(int argc, char * argv[])
     auto bridge = ros1_bridge::create_bridge_from_1_to_2(
       ros1_node,
       ros2_node,
-      "advanced_navigation_driver/msg/RawSensorsPacket",
+      "advanced_navigation_driver/RawSensorsPacket",
       "/n101xw/ins/RawSensors",
       10,
       "advanced_navigation_driver/msg/RawSensorsPacket",
